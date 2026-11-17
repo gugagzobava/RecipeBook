@@ -1,0 +1,12 @@
+namespace RecipeBook.Api.Mapping;
+
+public class CommentProfile : Profile
+{
+    public CommentProfile()
+    {
+        CreateMap<Comment, CommentDto>()
+            .ForMember(d => d.AuthorName, o => o.MapFrom(s => s.User.DisplayName));
+
+        CreateMap<Favorite, FavoriteDto>();
+    }
+}

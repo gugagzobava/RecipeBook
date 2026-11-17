@@ -1,0 +1,11 @@
+global using AutoMapper;
+global using AutoMapper.QueryableExtensions;
+global using FluentValidation;
+global using Microsoft.AspNetCore.Authorization;
+global using Microsoft.AspNetCore.Mvc;
+global using Microsoft.EntityFrameworkCore;
+global using RecipeBook.Api.Common;
+global using RecipeBook.Api.Data;
+global using RecipeBook.Api.Data.Entities;
+global using RecipeBook.Api.DTOs;
+global using RecipeBook.Api.Services;

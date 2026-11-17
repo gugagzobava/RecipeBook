@@ -1,0 +1,135 @@
+@host = https://localhost:7100
+@adminToken = PASTE_ADMIN_TOKEN
+@userToken = PASTE_USER_TOKEN
+
+### 1. Register
+POST {{host}}/api/auth/register
+Content-Type: application/json
+
+{ "email": "new@test.com", "password": "Pass1234", "displayName": "New User" }
+
+### 2. Login as seeded user
+POST {{host}}/api/auth/login
+Content-Type: application/json
+
+{ "email": "user@recipebook.com", "password": "User123!" }
+
+### 3. Login as seeded admin
+POST {{host}}/api/auth/login
+Content-Type: application/json
+
+{ "email": "admin@recipebook.com", "password": "Admin123!" }
+
+### 4. Categories (any authenticated user)
+GET {{host}}/api/categories
+Authorization: Bearer {{userToken}}
+
+### 5. Create category (Admin only; User gets 403)
+POST {{host}}/api/categories
+Authorization: Bearer {{adminToken}}
+Content-Type: application/json
+
+{ "name": "სნექები" }
+
+### 6. Create recipe with nested steps + ingredients
+POST {{host}}/api/recipes
+Authorization: Bearer {{userToken}}
+Content-Type: application/json
+
+{
+  "title": "ხაჭაპური იმერული",
+  "description": "ცომი და ყველი.",
+  "cookingMinutes": 40, "servings": 4, "difficulty": "Easy", "categoryId": 3,
+  "steps": [
+    { "order": 1, "instruction": "მოამზადეთ ცომი." },
+    { "order": 2, "instruction": "შეავსეთ ყველით და გამოაცხვეთ." }
+  ],
+  "ingredients": [
+    { "ingredientId": 1, "quantity": 500, "unit": "Gram" },
+    { "ingredientId": 8, "quantity": 300, "unit": "Gram" }
+  ]
+}
+
+### 7. Validation error (many errors at once)
+POST {{host}}/api/recipes
+Authorization: Bearer {{userToken}}
+Content-Type: application/json
+
+{
+  "title": "ab", "cookingMinutes": 0, "servings": 100, "difficulty": "Easy", "categoryId": 999,
+  "steps": [ { "order": 1, "instruction": "x" }, { "order": 3, "instruction": "ok step" } ],
+  "ingredients": [ { "ingredientId": 1, "quantity": -1, "unit": "Gram" }, { "ingredientId": 1, "quantity": 5, "unit": "Gram" } ]
+}
+
+### 8. List with filters + pagination
+GET {{host}}/api/recipes?categoryId=3&difficulty=Medium&maxMinutes=60&ingredientId=1&search=ხაჭ&page=1&pageSize=10
+Authorization: Bearer {{userToken}}
+
+### 9. Recipe details
+GET {{host}}/api/recipes/1
+Authorization: Bearer {{userToken}}
+
+### 10. Update (author/admin only)
+PUT {{host}}/api/recipes/1
+Authorization: Bearer {{userToken}}
+Content-Type: application/json
+
+{
+  "title": "ხაჭაპური აჭარული (განახლებული)", "description": "ახალი აღწერა.",
+  "cookingMinutes": 50, "servings": 3, "difficulty": "Hard", "categoryId": 3,
+  "steps": [ { "order": 1, "instruction": "ახალი ნაბიჯი ერთი." } ],
+  "ingredients": [ { "ingredientId": 7, "quantity": 3, "unit": "Piece" } ]
+}
+
+### 11. Comment
+POST {{host}}/api/recipes/1/comments
+Authorization: Bearer {{userToken}}
+Content-Type: application/json
+
+{ "text": "გემრიელია!" }
+
+### 12. Delete comment
+DELETE {{host}}/api/recipes/1/comments/1
+Authorization: Bearer {{userToken}}
+
+### 13. Favorite (second call => 409)
+POST {{host}}/api/recipes/1/favorite
+Authorization: Bearer {{userToken}}
+
+### 14. Remove favorite
+DELETE {{host}}/api/recipes/1/favorite
+Authorization: Bearer {{userToken}}
+
+### 15. My favorites / my recipes
+GET {{host}}/api/me/favorites
+Authorization: Bearer {{userToken}}
+
+###
+GET {{host}}/api/me/recipes
+Authorization: Bearer {{userToken}}
+
+### 16. Chef profile (upsert, get mine, get other)
+PUT {{host}}/api/me/chef-profile
+Authorization: Bearer {{userToken}}
+Content-Type: application/json
+
+{ "bio": "მოკლე ბიო", "speciality": "დესერტები", "yearsOfExperience": 5 }
+
+###
+GET {{host}}/api/me/chef-profile
+Authorization: Bearer {{userToken}}
+
+###
+GET {{host}}/api/users/2/chef-profile
+Authorization: Bearer {{userToken}}
+
+### 17. Delete recipe (author/admin; others get 403)
+DELETE {{host}}/api/recipes/1
+Authorization: Bearer {{adminToken}}
+
+### 18. BONUS: what can I cook?
+POST {{host}}/api/recipes/search-by-ingredients
+Authorization: Bearer {{userToken}}
+Content-Type: application/json
+
+{ "ingredientIds": [1, 8] }
